@@ -1,0 +1,22 @@
+Ignore	90
+Ignore	1N
+Ignore	108
+Parents	F1Mother,F1Father,F0GM
+Female	1,102,107,115,116,15,16N,17N,18N,19,21,23,24,26,30,33,35,4,45,50,57,58,6,67,68,7,72,75,77,8,80,9
+Male	100,101,103,109,110,111,114,117,118,11N,12,120,13,14,2,22,27,28,29,3,31,34,37,38,39,40,41,5,53,54,71,73,74,78,79,89,99
+Parents	F2 Males	F2 Females	Type	Recombination
+ABB	H	B	Maternal-HB	N
+HAH	A	H	Maternal-AH	N
+HAA	H	A	Maternal-HA	N
+HAB	H	A	Maternal-HA	N
+HAH	H	A	Maternal-HA	N
+AHB	A,H	A,B	Paternal-AHAB_AHB	Y
+AHA	A,H	A,B	Paternal-AHAB_AHA	Y
+HAA	A,H	A,H	Maternal-AHAH	N
+HAB	A,H	A,H	Maternal-AHAH	N
+HAH	A,H	A,H	Maternal-AHAH	N
+AHA	A,H	A,H	Paternal-AHAH	Y
+AHH	A,H	A,H	Paternal-AHAH	Y
+AHB	A,H	A,H	Paternal-AHAH	Y
+HHA	A,2H,B	A,2H,B	IntercrossHom-ABHABH	Y
+HHH	A,2H,B	A,2H,B	IntercrossHet-ABHABH	Y
