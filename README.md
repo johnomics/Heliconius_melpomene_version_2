@@ -2,47 +2,47 @@ This repository describes how version 2 of the *Heliconius melpomene* genome was
 
 # Generate Markers
 
-VCF files were generated containing SNPs for cross C115, containing F0 grandmother, F1 parents and 69 offspring against *Heliconius melpomene* genome version 1.1 (Hmel1-1) (see Methods for details of alignment and SNP calling). Separate VCF files were created for the primary and haplotype scaffolds (`C115.Hmel1-1_primaryScaffolds.vcf`, `C115.Hmel_haplotype_scaffolds.vcf`). SNPs were converted to markers using the `scaffoldgenome.pl` script, parallelised using `vcf-parallel.pl`:
+VCF files were generated containing SNPs for the Heliconius melpomene mapping cross, containing F0 grandmother, F1 parents and 69 offspring against *Heliconius melpomene* genome version 1.1 (Hmel1-1) (see Methods for details of alignment and SNP calling). Separate VCF files were created for the primary and haplotype scaffolds (`Hmel_cross.Hmel1-1_primaryScaffolds.vcf`, `Hmel_cross.Hmel_haplotype_scaffolds.vcf`). SNPs were converted to markers using the `scaffoldgenome.pl` script, parallelised using `vcf-parallel.pl`:
 
 ```
-vcf-parallel.pl -s scaffoldgenome.pl -v C115.Hmel1-1_primaryScaffolds.vcf -e "-g C115_marker_types.txt -r C115_marker_types.rms_pval.txt" -b -o C115 -t 30
+vcf-parallel.pl -s scaffoldgenome.pl -v Hmel_cross.Hmel1-1_primaryScaffolds.vcf -e "-g Hmel_cross_marker_types.txt -r Hmel_cross_marker_types.rms_pval.txt" -b -o Hmel_cross.linkage_map -t 30
 ```
 
 ```
-vcf-parallel.pl -s scaffoldgenome.pl -v C115.Hmel_haplotype_scaffolds.vcf -e "-g C115_marker_types.txt -r C115_marker_types.rms_pval.txt" -b -o C115.hap -t 15
+vcf-parallel.pl -s scaffoldgenome.pl -v Hmel_cross.Hmel_haplotype_scaffolds.vcf -e "-g Hmel_cross_marker_types.txt -r Hmel_cross_marker_types.rms_pval.txt" -b -o Hmel_cross.linkage_map -t 15
 ```
 
-These commands produce an SQLite3 database, `C115.db`, containing SNP markers and scaffold regions for all scaffolds.
+These commands produce an SQLite3 database, `Hmel_cross.linkage_map.db`, containing SNP markers in the `markers` table and scaffold regions for all scaffolds in the `blocks` table.
 
-`C115_marker_types.txt` (included in the repository) is a config file describing the cross (parents and sexes, as well as some poor-quality individuals to ignore) and marker types to process (see Table S1). For a particular marker type, the expected parent calls and offspring calls are given, along with a name for the type (Type) and whether recombination can be detected with this marker or not (Recombination, Y/N). Calls are defined using alleles A or B for homozygotes and H for heterozygotes. Parent calls are defined by the order given in the Parents line. For offspring, where multiple calls are possible, they are separated by commas. Multiples of an allele can be given by adding a number before the allele. For example, Intercross calls segregating by Mendelian inheritance in a 1:2:1 ratio are defined as A,2H,B.
+`Hmel_cross_marker_types.txt` (included in the repository) is a config file describing the cross (parents and sexes, as well as some poor-quality individuals to ignore) and marker types to process (see Table S1). For a particular marker type, the expected parent calls and offspring calls are given, along with a name for the type (Type) and whether recombination can be detected with this marker or not (Recombination, Y/N). Calls are defined using alleles A or B for homozygotes and H for heterozygotes. Parent calls are defined by the order given in the Parents line. For offspring, where multiple calls are possible, they are separated by commas. Multiples of an allele can be given by adding a number before the allele. For example, Intercross calls segregating by Mendelian inheritance in a 1:2:1 ratio are defined as A,2H,B.
 
-`C115_marker_types.rms_pval.txt` (included in the repository) is a cache of results for the root mean square (RMS) test, generated using the `generate_rms_distributions.pl` script. This script is run by `scaffoldgenome.pl` if no cached values are provided, but they can be generated separately as follows:
+`Hmel_cross_marker_types.rms_pval.txt` (included in the repository) is a cache of results for the root mean square (RMS) test, generated using the `generate_rms_distributions.pl` script. This script is run by `scaffoldgenome.pl` if no cached values are provided, but they can be generated separately as follows:
 
 ```
-generate_rms_distributions.pl -g C115_marker_types.txt -s 1000000
+generate_rms_distributions.pl -g Hmel_cross_marker_types.txt -s 1000000
 ```
 
 The `-s` option defines how many samples to draw from the distribution.
 
-Scaffold regions (blocks) defined by `scaffoldgenome.pl` in the `blocks` table in `C115.db` are then cleaned using `clean_blocks.pl`, writing new blocks to the table `cleanblocks` (see Methods section "Identification of maternal chromosome prints and paternal markers" for details);
+Scaffold regions (blocks) defined by `scaffoldgenome.pl` in the `blocks` table in `Hmel_cross.linkage_map.db` are then cleaned using `clean_blocks.pl`, writing new blocks to the table `cleanblocks` (see Methods section "Identification of maternal chromosome prints and paternal markers" for details);
 
 ```
-clean_blocks.pl -i C115.db -o C115
+clean_blocks.pl -i Hmel_cross.linkage_map.db -o Hmel_cross.linkage_map
 ```
 
 # Build Linkage Maps
 
 
-Linkage maps were constructed by the `build_linkage_maps.pl` script, which takes the `C115.db` database as input, cleans the markers, separates them into linkage groups, and passes them to `MSTMap` to build maps for each linkage group. `MSTMap.exe` must be in the path. It takes two additional optional files, `known_patterns.txt`, which contains known patterns inferred manually from inspection of SNPs but which were rejected by `scaffoldgenome.pl` due to segregation distortion or rejected by `build_linkage_maps` as they appeared at the ends of linkage groups, and `correct_patterns.txt`, which contains patterns inferred incorrectly by `scaffoldgenome.pl`, to be corrected by `build_linkage_maps.pl`.
+Linkage maps were constructed by the `build_linkage_maps.pl` script, which takes the `Hmel_cross.linkage_map.db` database as input, cleans the markers, separates them into linkage groups, and passes them to `MSTMap` to build maps for each linkage group. `MSTMap.exe` must be in the path. It takes two additional optional files, `known_patterns.txt`, which contains known patterns inferred manually from inspection of SNPs but which were rejected by `scaffoldgenome.pl` due to segregation distortion or rejected by `build_linkage_maps` as they appeared at the ends of linkage groups, and `correct_patterns.txt`, which contains patterns inferred incorrectly by `scaffoldgenome.pl`, to be corrected by `build_linkage_maps.pl`. This script outputs new tables `mapblocks`, `chromosome_map` and `scaffold_map` to the input database.
 
 ```
-build_linkage_maps.pl -i C115.db -k known_patterns.txt -c correct_patterns.txt
+build_linkage_maps.pl -i Hmel_cross.linkage_map.db -k known_patterns.txt -c correct_patterns.txt
 ```
 
-Many individual scaffold regions were called incorrectly; either they were called with the incorrect marker, or they were not called at all. Many of these regions were identified manually during fixing of misassemblies and ordering of scaffolds. These regions were corrected using `clean_errors.py`, providing the file `block_errors_additions.txt` as input. The maps for several chromosomes were oriented differently to `Hmel1.1` and so were reversed at this stage, which required updating markers for all scaffold regions for these chromosomes. The file `chromosomes_to_reverse.txt` lists the reversed chromosomes. The new scaffold blocks were written to a new SQLite3 database, `C115_clean.db`.
+Many individual scaffold regions were called incorrectly; either they were called with the incorrect marker, or they were not called at all. Many of these regions were identified manually during fixing of misassemblies and ordering of scaffolds. These regions were corrected using `clean_errors.py`, providing the file `block_errors_additions.txt` as input. The maps for several chromosomes were oriented differently to `Hmel1.1` and so were reversed at this stage, which required updating markers for all scaffold regions for these chromosomes. The file `chromosomes_to_reverse.txt` lists the reversed chromosomes. The new scaffold blocks were written to a new SQLite3 database, `Hmel_cross.linkage_map.clean.db`.
 
 ```
-clean_errors.py -d /disk1/jd626/wgs_alignments/C115.db -e block_errors_additions.txt -r chromosomes_to_reverse.txt  -o C115_clean.db
+clean_errors.py -d Hmel_cross.linkage_map.db -e block_errors_additions.txt -r chromosomes_to_reverse.txt  -o Hmel_cross.linkage_map.clean.db
 ```
 
 # Correct and Merge Draft Genome
