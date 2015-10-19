@@ -1,5 +1,7 @@
 This repository describes how version 2 of the *Heliconius melpomene* genome was produced, and includes bespoke code written to generate markers and linkage maps, incorporate haplotype scaffolds and PacBio sequence into the genome and order scaffolds. The bespoke code is provided in the `code` folder for transparency only. All config files mentioned can be found in the `config` folder. Full path names have been omitted.
 
+A preprint about this genome assembly is now [available on bioRxiv](http://www.biorxiv.org/content/early/2015/10/15/029199). The genome itself is available in a full distribution with annotation, maps and other information from  [butterflygenome.org](http://butterflygenome.org/node/4) and as genome and gene sequences from [LepBase v1.0](http://ensembl.lepbase.org/index.html) (Hmel2).
+
 # Generate Markers
 
 VCF files were generated containing SNPs for the Heliconius melpomene mapping cross, containing F0 grandmother, F1 parents and 69 offspring against *Heliconius melpomene* genome version 1.1 (Hmel1-1) (see Methods for details of alignment and SNP calling). Separate VCF files were created for the primary and haplotype scaffolds (`Hmel_cross.Hmel1-1_primaryScaffolds.vcf`, `Hmel_cross.Hmel_haplotype_scaffolds.vcf`). SNPs were converted to markers using the `scaffoldgenome.pl` script, parallelised using `vcf-parallel.pl`:
