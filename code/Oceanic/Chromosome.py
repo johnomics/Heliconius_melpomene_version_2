@@ -314,8 +314,6 @@ class Chromosome:
 
                 chrend = chrstart + raft.length - 1
                 raft_orientation = '+'
-                if raft.start > raft.end:
-                    raft_orientation = '-'
                 comment = 'anchored'
                 if pool.pooltype == 'orient':
                     comment = 'unoriented'
