@@ -123,3 +123,38 @@ filter_chain.py -c Hmel1-2_Hmel2/genome.genomex.result/all.tbest.chain.gz -p Hme
 CrossMap.py gff Hmel1-2_Hmel2.chain.filtered.gz Hmel1-1_primary_haplotype_mtDNA.gff >Hmel1-2_Hmel2.crossmap.out
 transfer_features.py -m Hmel2_transfer_merge.tsv -c Hmel1-2_Hmel2.crossmap.out -f Hmel1-1_primary_haplotype_mtDNA.fa -n Hmel2.fa -o Hmel2
 ```
+
+
+# Estimate Genome Size from Read Depths
+
+To estimate genome sizes from read depths, adjusted for GC content, align one individual with good coverage of the genome to the reference. Here, we used the F1 father of the mapping cross and aligned to Hmel2 using Stampy, Picard MarkDuplicates and Picard IndelRealigner (see manuscript for details).
+
+Generate windows and per base read depths with [bedtools](http://bedtools.readthedocs.org/en/latest/), pulling out gap locations and scaffold sizes from AGP files (in maps folder of Hmel2 distribution):
+
+```
+grep fragment Hmel2_scaffolds.agp | cut -f1-3 > Hmel2.gaps.bed
+grep Hmel2 Hmel2_chromosomes.agp | cut -f6,8 > Hmel2.scaffolds.bed
+bedtools makewindows -g Hmel2.scaffolds.bed -w 1000 > Hmel2.1kb.windows.bed
+bedtools intersect -v -a Hmel2.1kb.windows.bed -b Hmel2.gaps.bed > Hmel2.1kb.windows.nogaps.bed
+bedtools genomecov -ibam F1Father.C115_1.121015.Hmel2.rmdup.realign.bam -d > F1Father.C115_1.121015.Hmel2.rmdup.realign.bedtools_genomecov.perbase.out
+```
+
+
+Generate GC content and median read depths per window with `calculate_read_depth_gc_windows.py`:
+```
+for i in `seq -w 0 21`; do (calculate_read_depth_gc_windows.py -f Hmel2.fa -b Hmel2.1kb.windows.nogaps.bed -c F1Father.C115_1.121015.Hmel2.rmdup.realign.bedtools_genomecov.perbase.out -w 1000 -o readdepth_gc_1kb.Hmel2$i -s Hmel2$i &); done
+```
+
+The bash loop just runs the script on each chromosome in parallel, passing in a different scaffold prefix (`-s` option). The script will run without the loop and will process the whole genome if `-s` is not provided. `-w` is required and should be equal to the window size in the BED file. `-o` is a prefix for the output file. `-f` is the reference genome.
+
+If run in parallel, the output needs to be concatenated, eg:
+```
+cat readdepth_gc_1kb*out > readdepth_gc_1kb.windows.Hmel2.out
+```
+
+Finally, run `adjust_read_depth_windows.py` to calculate genome sizes:
+```
+adjust_read_depth_windows.py -w readdepth_gc_1kb.windows.Hmel2.out -o readdepth_gc_1kb.windows.Hmel2.adjusted.tsv -s 1000
+```
+
+`-o` is the output filename. `-s` is the window size. This script outputs median read depths for all windows of each GC value to standard output, along with the genome-wide median read depth, total bases covered by the windows, a genome size estimate based on read depths unadjusted for GC content, and a genome size estimate based on read depths adjusted for GC content. It writes the adjusted coverages for each window to the output file.
